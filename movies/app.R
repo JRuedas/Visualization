@@ -22,3 +22,27 @@ package.check <- lapply(
     }
   }
 )
+
+# User interface ----
+ui <- fluidPage(
+  titlePanel("Big data: IMDB Movies project"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      
+      
+      br(),
+      br(),
+    ),
+    
+    mainPanel()
+  )
+)
+
+# Server logic
+server <- function(input, output) {
+
+}
+
+# Run the app
+shinyApp(ui, server)
