@@ -17,3 +17,5 @@ parseJSON <- function(column) {
 
 dataset$genres <- parseJSON(dataset$genres)
 dataset$production_countries <- parseJSON(dataset$production_countries)
+
+write.csv(x = dataset, file="data/cleaned_tmdb_5000_movies.csv")
