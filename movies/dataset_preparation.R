@@ -1,4 +1,5 @@
-movies <- read.csv(file="data/tmdb_5000_movies.csv", header=TRUE, sep=",")
+library("rjson")
+movies <- read.csv(file="data/tmdb_5000_movies.csv", header=TRUE, sep=",", stringsAsFactors=FALSE)
 keep <- c("budget", "genres", "production_countries", "revenue", "runtime", "vote_average", "title")
 dataset <- movies[keep]
 summary(dataset)
