@@ -1,12 +1,17 @@
 library("rjson")
 movies <- read.csv(file="data/tmdb_5000_movies.csv", header=TRUE, sep=",", stringsAsFactors=FALSE)
-keep <- c("budget", "genres", "production_countries", "revenue", "runtime", "vote_average", "title")
+keep <- c("budget", "genres", "production_countries", "revenue", "runtime", "vote_average", "title", "release_date")
 dataset <- movies[keep]
 summary(dataset)
 dataset <- dataset[dataset$budget != 0,]
 dataset <- dataset[dataset$revenue != 0,]
 dataset <- dataset[dataset$genres != "[]",]
 dataset <- dataset[dataset$production_countries != "[]",]
+date <- strsplit(dataset$release_date, "-")
+dataset$year <- unlist(lapply(date, `[[`, 1))
+dataset$month <- unlist(lapply(date, `[[`, 2))
+dataset$day <- unlist(lapply(date, `[[`, 3))
+dataset$release_date <- NULL
 
 parseJSON <- function(column) {
   result <- NULL
