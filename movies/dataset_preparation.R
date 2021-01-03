@@ -8,9 +8,9 @@ dataset <- dataset[dataset$revenue != 0,]
 dataset <- dataset[dataset$genres != "[]",]
 dataset <- dataset[dataset$production_countries != "[]",]
 date <- strsplit(dataset$release_date, "-")
-dataset$year <- as.numeric(sapply(date, `[[`, 1))
-dataset$month <- as.numeric(sapply(date, `[[`, 2))
-dataset$day <- as.numeric(sapply(date, `[[`, 3))
+dataset$year <- sapply(date, `[[`, 1)
+dataset$month <- sapply(date, `[[`, 2)
+dataset$day <- sapply(date, `[[`, 3)
 dataset$release_date <- NULL
 
 parseJSON <- function(column) {
@@ -28,6 +28,18 @@ as_decade <- function(year) {
   year - (year %% 10)
 }
 
-dataset$decade <- sapply(dataset$year, as_decade)
+dataset$decade <- sapply(as.numeric(dataset$year), as_decade)
+dataset$decade <- factor(dataset$decade)
 
 write.csv(x = dataset, file="data/cleaned_tmdb_5000_movies.csv")
+
+dataset <- dataset[as.numeric(dataset$year) >= 1990 & as.numeric(dataset$year) <= 1999,]
+
+dataset$revenue <- log10(dataset$revenue)
+
+ggplot(data = dataset, mapping = aes(x = year, y = month, fill = revenue)) +
+  geom_tile()
+
+ggplot(data = dataset, aes(x = decade, y = month)) +
+  geom_tile(aes(fill = revenue))
+  

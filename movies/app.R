@@ -27,7 +27,7 @@ package.check <- lapply(
 
 # User interface ----
 ui <- fluidPage(
-  titlePanel("Big data: IMDB Movies project"),
+  titlePanel("Big data: TMDB Movies project"),
   
   sidebarLayout(
     sidebarPanel(
