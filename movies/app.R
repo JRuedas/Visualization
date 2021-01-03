@@ -12,7 +12,7 @@
 ## First specify the packages of interest
 packages = c("shiny")
 
-movies <- read.csv(file="data/IMDb_movies.csv", header=TRUE, sep=",")
+movies <- read.csv(file="data/cleaned_tmdb_5000_movies.csv", header=TRUE, sep=",")
 
 ## Now load or install & load all
 package.check <- lapply(
