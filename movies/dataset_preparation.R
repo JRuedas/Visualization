@@ -8,9 +8,9 @@ dataset <- dataset[dataset$revenue != 0,]
 dataset <- dataset[dataset$genres != "[]",]
 dataset <- dataset[dataset$production_countries != "[]",]
 date <- strsplit(dataset$release_date, "-")
-dataset$year <- unlist(lapply(date, `[[`, 1))
-dataset$month <- unlist(lapply(date, `[[`, 2))
-dataset$day <- unlist(lapply(date, `[[`, 3))
+dataset$year <- as.numeric(sapply(date, `[[`, 1))
+dataset$month <- as.numeric(sapply(date, `[[`, 2))
+dataset$day <- as.numeric(sapply(date, `[[`, 3))
 dataset$release_date <- NULL
 
 parseJSON <- function(column) {
@@ -23,5 +23,11 @@ parseJSON <- function(column) {
 
 dataset$genres <- parseJSON(dataset$genres)
 dataset$production_countries <- parseJSON(dataset$production_countries)
+
+as_decade <- function(year) {
+  year - (year %% 10)
+}
+
+dataset$decade <- sapply(dataset$year, as_decade)
 
 write.csv(x = dataset, file="data/cleaned_tmdb_5000_movies.csv")
