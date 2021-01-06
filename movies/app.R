@@ -140,7 +140,7 @@ server <- function(input, output) {
       summarise(total = mean(earnings)) %>%
       arrange(year, month)
     
-    ggplot(earnings_by_year, aes(earnings_by_year$year, as.factor(earnings_by_year$month))) +
+    ggplot(earnings_by_year, aes(as.factor(earnings_by_year$year), as.factor(earnings_by_year$month))) +
       geom_tile(aes(fill = earnings_by_year$total), colour="white") +
       scale_fill_gradient(low="light green", high="dark green") +
       labs(x = "Years", y = "Months", fill = "Earnings") +
@@ -173,8 +173,7 @@ server <- function(input, output) {
       summarise(total = sum(vote_average))
     
     ggplot(rating_by_year, aes(rating_by_year$year, rating_by_year$total,
-                               group=unlist(rating_by_year$production_companies),
-                               color=unlist(rating_by_year$production_companies))) +
+                               color=rating_by_year$production_companies)) +
       geom_line() +
       labs(x = "Year", y = "Average") +
       scale_color_discrete(name="Companies") +

@@ -100,8 +100,7 @@ rating_by_year <- dataset %>%
   group_by(year, production_companies) %>%
   summarise(total = mean(vote_average))
 
-ggplot(rating_by_year, aes(rating_by_year$year, rating_by_year$total,group=unlist(rating_by_year$production_companies),
-                           color=c("red","black","orange","yellow","blue"))) +
+ggplot(rating_by_year, aes(rating_by_year$year, rating_by_year$total,group=unlist(rating_by_year$production_companies),color=unlist(rating_by_year$production_companies))) +
   geom_line() +
   labs(x = "Year", y = "Average") +
   scale_color_discrete(name="Companies") +
