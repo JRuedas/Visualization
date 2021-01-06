@@ -129,6 +129,12 @@ ui <- fluidPage(
                   label = "Choose a country to display",
                   choices = countries,
                   selected = "United States of America"),
+      
+      radioButtons("sorted_radio",
+                   label = "Sort by frequency",
+                   choices = list("Unsorted" = 1, "Ascendent" = 2,
+                                  "Descendent" = 3),
+                   selected = 1),
       br(),
       br(),
       br(),
@@ -223,12 +229,24 @@ server <- function(input, output) {
   ############### THIRD QUESTION ###############
   
   output$wordcloud <- renderPlot({
-    
+
     genres_by_country <- dataset %>%
       filter(production_countries %in% input$selected_country) %>%
       group_by(production_countries,genres) %>%
       count(genres)
-
+    
+    # genres_by_country <- s´witch(input$sorted_radio,
+    #                "Ascendent" = ),
+    #                "Descendent" = )
+    
+    if(input$sorted_radio == "2") {
+      genres_by_country <- genres_by_country %>% 
+                                arrange(genres_by_country$n)
+    } else if(input$sorted_radio == "3") {
+      genres_by_country <- genres_by_country %>% 
+                                arrange(desc(genres_by_country$n))
+    }
+    
     ggplot(genres_by_country, aes(x=genres_by_country$genres, y=genres_by_country$n)) +
       geom_segment(aes(x=genres_by_country$genres ,xend=genres_by_country$genres, y=0, yend=genres_by_country$n), color="grey") +
       geom_point(size=4, color="dark green") +
