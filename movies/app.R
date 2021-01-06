@@ -26,15 +26,46 @@ package.check <- lapply(
 # Load data
 dataset <- read.csv(file="data/cleaned_tmdb_5000_movies.csv", header=TRUE, sep=",")
 
-companies <- sort(unique(dataset$production_companies))
-companies <- c("Choose a company", companies)
+################# FIRST QUESTION #################
 
-countries <- sort(unique(dataset$production_countries))
-
-# Aux Functions
+# Aux Function
 as_decade <- function(year) {
   year - (year %% 10)
 }
+
+############### END FIRST QUESTION ###############
+
+################# SECOND QUESTION #################
+
+# Select companies and the year they realized a film (without repetitions)
+df_companies_dist_years <- dataset %>%
+  distinct(production_companies, year)
+
+# Count number of years a company has realized a film
+df_count <- df_companies_dist_years %>%
+  group_by(production_companies) %>%
+  summarise(count = n())
+
+# Select companies with less than 5 different years
+df_delete <- df_count %>%
+  filter(count < 5)
+
+# Delete companies with less than 5 different years
+# This is the dataset used for the second question
+dataset2 <- dataset %>%
+  filter(!production_companies %in% df_delete$production_companies)
+
+companies <- sort(unique(dataset2$production_companies))
+choose_a_company = "Choose a company"
+companies <- c(choose_a_company, companies)
+
+############### END SECOND QUESTION ###############
+
+################# THIRD QUESTION #################
+
+countries <- sort(unique(dataset$production_countries))
+
+############### END THIRD QUESTION ###############
 
 # User interface ----
 ui <- fluidPage(
@@ -53,8 +84,8 @@ ui <- fluidPage(
       br(),
       selectInput("selected_decade", 
                   label = "Choose a decade to display",
-                  choices = seq(1970, 2010, 10),
-                  selected = 1970),
+                  choices = seq(min(dataset$year), max(dataset$year), 10),
+                  selected = 2010),
       br(),
       br(),
       br(),
@@ -64,7 +95,6 @@ ui <- fluidPage(
       br(),
       br(),
       hr(style = "border-top: 1px solid black;"),
-      br(),
       br(),
       selectInput("selected_company1", 
                   label = "Company 1",
@@ -81,11 +111,12 @@ ui <- fluidPage(
       selectInput("selected_company4", 
                   label = "Company 4",
                   choices = companies,
-                  selected = companies[1]),
+                  selected = choose_a_company),
       selectInput("selected_company5", 
                   label = "Company 5",
                   choices = companies,
-                  selected = companies[1]),
+                  selected = choose_a_company),
+      br(),
       hr(style = "border-top: 1px solid black;"),
       br(),
       br(),
@@ -117,6 +148,7 @@ ui <- fluidPage(
       h4("Second Question", align = "center"),
       plotOutput("line_char"),
       hr(style = "border-top: 1px solid black;"),
+      h4("Third Question", align = "center"),
       plotOutput("wordcloud"),
       br(),
       br(),
@@ -151,7 +183,7 @@ server <- function(input, output) {
   
   # Several conclusions:
   # 1) Most beneficial in summer, maybe because people have more time to go to cinema
-  # 2) Moreover, earnings are increasing over time
+  # 2) Moreover, earnings are decreasing over time (for every film, not the total sum)
   
   ############### END FIRST QUESTION ###############
   
@@ -167,7 +199,10 @@ server <- function(input, output) {
       input$selected_company5
     )
     
-    rating_by_year <- dataset %>%
+    # Associate number of company with color
+    colors <- setNames(c("red", "blue", "green", "brown", "orange"), selected_companies)
+    
+    rating_by_year <- dataset2 %>%
       filter(production_companies %in% selected_companies) %>%
       group_by(year, production_companies) %>%
       summarise(total = sum(vote_average))
@@ -176,7 +211,7 @@ server <- function(input, output) {
                                color=rating_by_year$production_companies)) +
       geom_line() +
       labs(x = "Year", y = "Average") +
-      scale_color_discrete(name="Companies") +
+      scale_color_manual(name="Companies", values=colors) +
       theme_light()
   })
   
