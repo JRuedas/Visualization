@@ -10,7 +10,7 @@
 ## from CRAN and then loaded.
 
 ## First specify the packages of interest
-packages = c("shiny", "ggplot2", "dplyr", "wordcloud")
+packages = c("shiny", "ggplot2", "dplyr")
 
 ## Now load or install & load all
 package.check <- lapply(
@@ -24,7 +24,7 @@ package.check <- lapply(
 )
 
 # Load data
-dataset <- read.csv(file="data/cleaned_tmdb_5000_movies.csv", header=TRUE, sep=",")
+dataset <- read.csv(file="data/cleaned_tmdb_5000_movies.csv", header=TRUE, sep=",", stringsAsFactors=FALSE)
 
 ################# FIRST QUESTION #################
 
@@ -176,7 +176,10 @@ server <- function(input, output) {
       geom_tile(aes(fill = earnings_by_year$total), colour="white") +
       scale_fill_gradient(low="light green", high="dark green") +
       labs(x = "Years", y = "Months", fill = "Earnings") +
-      theme_light()
+      theme_light() +
+      theme(
+        panel.grid = element_blank()
+      )
   })
   
   # Note: negative profits are shown as 0 earnings
@@ -221,15 +224,21 @@ server <- function(input, output) {
   
   output$wordcloud <- renderPlot({
     
-    genres_by_year <- dataset %>%
+    genres_by_country <- dataset %>%
       filter(production_countries %in% input$selected_country) %>%
       group_by(production_countries,genres) %>%
       count(genres)
-    
-    set.seed(1234)
-    wordcloud(words = genres_by_year$genres, freq = genres_by_year$n, min.freq = 1,
-              max.words=200, random.order=FALSE, rot.per=0.35, 
-              colors=brewer.pal(8, "Dark2"))
+
+    ggplot(genres_by_country, aes(x=genres_by_country$genres, y=genres_by_country$n)) +
+      geom_segment(aes(x=genres_by_country$genres ,xend=genres_by_country$genres, y=0, yend=genres_by_country$n), color="grey") +
+      geom_point(size=4, color="dark green") +
+      coord_flip() +
+      labs(x = "Genre", y = "Frequency") +
+      theme_light() +
+      theme(
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.y = element_blank()
+      )
   })
   ############# END THIRD QUESTION #############
 }
