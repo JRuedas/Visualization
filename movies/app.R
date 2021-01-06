@@ -155,7 +155,7 @@ ui <- fluidPage(
       plotOutput("line_char"),
       hr(style = "border-top: 1px solid black;"),
       h4("Third Question", align = "center"),
-      plotOutput("wordcloud"),
+      plotOutput("lollipop_chart"),
       br(),
       br(),
       br()
@@ -228,24 +228,22 @@ server <- function(input, output) {
   
   ############### THIRD QUESTION ###############
   
-  output$wordcloud <- renderPlot({
+  output$lollipop_chart <- renderPlot({
 
     genres_by_country <- dataset %>%
       filter(production_countries %in% input$selected_country) %>%
       group_by(production_countries,genres) %>%
       count(genres)
     
-    # genres_by_country <- s´witch(input$sorted_radio,
-    #                "Ascendent" = ),
-    #                "Descendent" = )
-    
-    if(input$sorted_radio == "2") {
-      genres_by_country <- genres_by_country %>% 
-                                arrange(genres_by_country$n)
-    } else if(input$sorted_radio == "3") {
-      genres_by_country <- genres_by_country %>% 
-                                arrange(desc(genres_by_country$n))
-    }
+    genres_by_country <- switch(input$sorted_radio,
+                   "1" = genres_by_country,
+                   "2" = genres_by_country %>% 
+                                          arrange(n),
+                   "3" = genres_by_country %>% 
+                                          arrange(desc(n))
+                   )
+
+    genres_by_country$genres <- factor(genres_by_country$genres, levels = genres_by_country$genres)
     
     ggplot(genres_by_country, aes(x=genres_by_country$genres, y=genres_by_country$n)) +
       geom_segment(aes(x=genres_by_country$genres ,xend=genres_by_country$genres, y=0, yend=genres_by_country$n), color="grey") +
