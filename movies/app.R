@@ -9,6 +9,7 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(stringr)
+library(wordcloud)
 
 # Load data
 dataset <- read.csv(file="data/cleaned_tmdb_5000_movies.csv", header=TRUE, sep=",", stringsAsFactors=FALSE)
@@ -61,22 +62,39 @@ companies <- c(choose_a_company, companies)
 
 ################# THIRD QUESTION #################
 
-# Unflatten the production countries and genres
-ds_countries_genres <- dataset %>%
-  unnest(production_countries = strsplit(production_countries, ",")) %>%
+# Unflatten the production countries
+ds_countries <- dataset %>%
+  unnest(production_countries = strsplit(production_countries, ","))
+
+# Trim production countries whitespaces
+ds_countries$production_countries <- lapply(ds_countries$production_countries, trimws)
+  
+# Unflatten the genres
+ds_countries_genres <- ds_countries %>%
   unnest(genres = strsplit(genres, ","))
 
-# Trim whitespaces
-ds_countries_genres$production_countries <- lapply(ds_countries_genres$production_countries, trimws)
+# Trim genres whitespaces
 ds_countries_genres$genres <- lapply(ds_countries_genres$genres, trimws)
 
-countries <- sort(unlist(unique(ds_countries_genres$production_countries)))
+# Unflatten the keywords
+ds_countries_keywords <- ds_countries %>%
+  unnest(keywords = strsplit(keywords, ","))
+
+# Trim keywords whitespaces
+ds_countries_keywords$keywords <- lapply(ds_countries_keywords$keywords, trimws)
+
+ds_countries_keywords <- ds_countries_keywords %>%
+  filter(nchar(keywords) <= 7)
+
+countries <- sort(unlist(unique(ds_countries$production_countries)))
 
 ############### END THIRD QUESTION ###############
 
 # User interface ----
 ui <- fluidPage(
-  titlePanel("Big data: TMDB Movies project"),
+  titlePanel(
+    h1("Big data: TMDB Movies project", align = "center")
+  ),
   
   sidebarLayout(
     sidebarPanel(
@@ -146,7 +164,6 @@ ui <- fluidPage(
                   label = "Choose a country to display",
                   choices = countries,
                   selected = "United States of America"),
-      
       radioButtons("sorted_radio",
                    label = "Sort by frequency",
                    choices = list("Unsorted" = 1, 
@@ -160,6 +177,16 @@ ui <- fluidPage(
       br(),
       br(),
       br(),
+      br(),
+      br(),
+      br(),
+      br(),
+      br(),
+      br(),
+      sliderInput("num_words",
+                  "Number of words:",
+                  min = 10, max = 50,
+                  value = 30),
       br(),
       br(),
       br()
@@ -182,6 +209,7 @@ ui <- fluidPage(
       hr(style = "border-top: 1px solid black;"),
       h4("Third Question", align = "center"),
       plotOutput("lollipop_chart"),
+      plotOutput("wordcloud"),
       br(),
       br(),
       br()
@@ -248,7 +276,7 @@ server <- function(input, output, session) {
     ggplot(rating_by_year, aes(rating_by_year$year, rating_by_year$total,
                                color=factor(unlist(rating_by_year$production_companies)))) +
       geom_line() +
-      labs(x = "Year", y = "Average") +
+      labs(x = "Years", y = "Rating average") +
       scale_color_manual(name="Companies", values=colors) +
       theme_light()
   })
@@ -302,6 +330,21 @@ server <- function(input, output, session) {
         panel.grid.major.y = element_blank()
       )
   })
+  
+  output$wordcloud <- renderPlot({
+    
+    keywords_by_country <- ds_countries_keywords %>%
+      filter(production_countries %in% input$selected_country) %>%
+      group_by(production_countries,keywords) %>%
+      count(keywords)
+    
+    set.seed(1234)
+    wordcloud(words = keywords_by_country$keywords, freq = keywords_by_country$n, min.freq = 5,
+              max.words=input$num_words, random.order=FALSE, rot.per=0.55, 
+              colors=brewer.pal(8, "Dark2"))
+  })
+  
+  
   ############# END THIRD QUESTION #############
 }
 
