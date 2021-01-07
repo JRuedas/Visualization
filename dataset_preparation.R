@@ -16,12 +16,11 @@ package.check <- lapply(
 
 # Aux functions
 get_name <- function(col) {
-  y <- sapply(fromJSON(col), function(x) x$name)
-  y[1]
+  lapply(fromJSON(col), function(x) x$name)
 }
 
 parseJSON <- function(column) {
-  sapply(column, get_name, USE.NAMES = FALSE) # Do not use column as name
+  lapply(column, get_name) # Do not use column as name
 }
 
 as_decade <- function(year) {
@@ -32,7 +31,7 @@ as_decade <- function(year) {
 movies <- read.csv(file="movies/data/tmdb_5000_movies.csv", header=TRUE, sep=",", stringsAsFactors=FALSE)
 
 # Removes useless columns
-keep <- c("budget", "genres", "keywords", "production_companies", "production_countries", "revenue", "runtime", "vote_average", "title", "release_date")
+keep <- c("budget", "genres", "keywords", "production_companies", "production_countries", "revenue", "vote_average", "title", "release_date")
 dataset <- movies[keep]
 
 # Removes missing values
@@ -61,6 +60,12 @@ dataset$genres <- parseJSON(dataset$genres)
 dataset$keywords <- parseJSON(dataset$keywords)
 dataset$production_companies <- parseJSON(dataset$production_companies)
 dataset$production_countries <- parseJSON(dataset$production_countries)
+
+# Flatten the lists into a compact values to write into CSV
+dataset$genres <- vapply(dataset$genres, paste, collapse = ", ", character(1L))
+dataset$keywords <- vapply(dataset$keywords, paste, collapse = ", ", character(1L))
+dataset$production_companies <- vapply(dataset$production_companies, paste, collapse = ", ", character(1L))
+dataset$production_countries <- vapply(dataset$production_countries, paste, collapse = ", ", character(1L))
 
 # Create decade column
 dataset$decade <- factor(sapply(as.numeric(dataset$year), as_decade))
