@@ -29,7 +29,7 @@ as_decade <- function(year) {
 }
 
 # Read CSV file
-movies <- read.csv(file="data/tmdb_5000_movies.csv", header=TRUE, sep=",", stringsAsFactors=FALSE)
+movies <- read.csv(file="movies/data/tmdb_5000_movies.csv", header=TRUE, sep=",", stringsAsFactors=FALSE)
 
 # Removes useless columns
 keep <- c("budget", "genres", "keywords", "production_companies", "production_countries", "revenue", "runtime", "vote_average", "title", "release_date")
@@ -66,6 +66,6 @@ dataset$production_countries <- parseJSON(dataset$production_countries)
 dataset$decade <- factor(sapply(as.numeric(dataset$year), as_decade))
 
 # Saves CSV
-write.csv(x = dataset, file="data/cleaned_tmdb_5000_movies.csv")
+write.csv(x = dataset, file="movies/data/cleaned_tmdb_5000_movies.csv")
 
 ###################### END DATA PREPARATION ######################
