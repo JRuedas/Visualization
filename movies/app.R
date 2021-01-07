@@ -7,6 +7,8 @@
 library(shiny)
 library(ggplot2)
 library(dplyr)
+library(tidyr)
+library(stringr)
 
 # Load data
 dataset <- read.csv(file="data/cleaned_tmdb_5000_movies.csv", header=TRUE, sep=",", stringsAsFactors=FALSE)
@@ -26,8 +28,15 @@ as_decade <- function(year) {
 max_year <- max(dataset$year)
 min_year <- min(dataset$year)
 
+# Unflatten the production companies
+ds_companies <- dataset %>%
+  unnest(production_companies = strsplit(production_companies, ",")) 
+
+# Trim whitespaces
+ds_companies$production_companies <- lapply(ds_companies$production_companies, trimws)
+
 # Select companies and the year they realized a film (without repetitions)
-df_companies_dist_years <- dataset %>%
+df_companies_dist_years <- ds_companies %>%
   distinct(production_companies, year)
 
 # Count number of years a company has realized a film
@@ -41,10 +50,10 @@ df_delete <- df_count %>%
 
 # Delete companies with less than 5 different years
 # This is the dataset used for the second question
-dataset_filter_companies <- dataset %>%
+ds_filter_companies <- ds_companies %>%
   filter(!production_companies %in% df_delete$production_companies)
 
-companies <- sort(unique(dataset_filter_companies$production_companies))
+companies <- sort(unlist(unique(ds_filter_companies$production_companies)))
 choose_a_company = "Choose a company"
 companies <- c(choose_a_company, companies)
 
@@ -52,7 +61,16 @@ companies <- c(choose_a_company, companies)
 
 ################# THIRD QUESTION #################
 
-countries <- sort(unique(dataset$production_countries))
+# Unflatten the production countries and genres
+ds_countries_genres <- dataset %>%
+  unnest(production_countries = strsplit(production_countries, ",")) %>%
+  unnest(genres = strsplit(genres, ","))
+
+# Trim whitespaces
+ds_countries_genres$production_countries <- lapply(ds_countries_genres$production_countries, trimws)
+ds_countries_genres$genres <- lapply(ds_countries_genres$genres, trimws)
+
+countries <- sort(unlist(unique(ds_countries_genres$production_countries)))
 
 ############### END THIRD QUESTION ###############
 
@@ -152,7 +170,7 @@ ui <- fluidPage(
       plotOutput("heat_map"),
       hr(style = "border-top: 1px solid black;"),
       h4("Second Question", align = "center"),
-      plotOutput("line_char"),
+      plotOutput("line_chart"),
       br(),
       br(),
       br(),
@@ -206,7 +224,7 @@ server <- function(input, output, session) {
   
   ############### SECOND QUESTION ###############
   
-  output$line_char <- renderPlot({
+  output$line_chart <- renderPlot({
     
     selected_companies = c(
       input$selected_company1,
@@ -219,16 +237,16 @@ server <- function(input, output, session) {
     # Associate number of company with color
     colors <- setNames(c("red", "blue", "green", "brown", "orange"), selected_companies)
     
-    dataset_filter_year <- dataset_filter_companies[as.numeric(dataset_filter_companies$year) >= input$date_range_start &
-                                                      as.numeric(dataset_filter_companies$year) <= input$date_range_end,]
+    ds_filter_year <- ds_filter_companies[as.numeric(ds_filter_companies$year) >= input$date_range_start &
+                                                      as.numeric(ds_filter_companies$year) <= input$date_range_end,]
     
-    rating_by_year <- dataset_filter_year %>%
+    rating_by_year <- ds_filter_year %>%
       filter(production_companies %in% selected_companies) %>%
       group_by(year, production_companies) %>%
       summarise(total = sum(vote_average))
     
     ggplot(rating_by_year, aes(rating_by_year$year, rating_by_year$total,
-                               color=rating_by_year$production_companies)) +
+                               color=factor(unlist(rating_by_year$production_companies)))) +
       geom_line() +
       labs(x = "Year", y = "Average") +
       scale_color_manual(name="Companies", values=colors) +
@@ -258,7 +276,7 @@ server <- function(input, output, session) {
   
   output$lollipop_chart <- renderPlot({
     
-    genres_by_country <- dataset %>%
+    genres_by_country <- ds_countries_genres %>%
       filter(production_countries %in% input$selected_country) %>%
       group_by(production_countries,genres) %>%
       count(genres)
