@@ -271,7 +271,7 @@ server <- function(input, output, session) {
     rating_by_year <- ds_filter_year %>%
       filter(production_companies %in% selected_companies) %>%
       group_by(year, production_companies) %>%
-      summarise(total = sum(vote_average))
+      summarise(total = mean(vote_average))
     
     ggplot(rating_by_year, aes(rating_by_year$year, rating_by_year$total,
                                color=factor(unlist(rating_by_year$production_companies)))) +
