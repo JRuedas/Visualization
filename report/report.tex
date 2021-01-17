@@ -1,0 +1,355 @@
+% Definiciones y constantes de estilo
+\include{definitions}
+
+\title{Big Data:\\ Design of a new interactive data analysis tool}
+\subtitle{Máster Universitario en Ingeniería Informática\\
+		  Universidad Politécnica de Madrid}
+\author{Group 22:\\
+		José Domínguez Pérez\\
+		Ismael Muñoz Aztout\\
+		Jonatan Ruedas Mora}
+\date{January 2021}
+
+\makeindex
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+We have selected a dataset based on films due the fact that we really love films and we think that the topic could be quite interesting, specially if we are able to show the evolution of the film industries in the last decades.
+
+We have chosen \href{https://www.kaggle.com/tmbd/tmdb-movie-metadata?select=tmdb_5000_movies.csv}{The Movie Database dataset} in order to carry out our practical work.
+
+\subsection{Dataset description}
+Our dataset consists of table with items and attributes. More specifically, it is a Flat Table with an explicit index (ID) of categorical type. 
+
+\begin{center}
+\begin{longtable}[c]{| c | c | c |}
+ \hline
+ \multicolumn{1}{| c |}{\bfseries Variable} & \multicolumn{1}{| c |}{\bfseries Type} & \multicolumn{1}{| c |}{\bfseries Description}\\
+ \hline
+ \endfirsthead
+  
+ \hline
+ \endhead
+ 
+ \hline
+ \endfoot  
+ 
+ \hline
+ \endlastfoot  
+  
+ Budget & Integer & Budget of the movie  \\
+  \hline
+ Genres & JSON & Genres of the movie  \\
+  \hline
+ Keywords  & JSON  & Keywords related to the movie  \\
+  \hline
+ Production$\textunderscore$companies & JSON & Companies that produced the movie  \\
+  \hline
+ Revenue  & Integer  & Revenue of the movie  \\
+  \hline
+ Runtime  & Integer  & Duration of the movie in minutes  \\
+  \hline
+ Vote$\textunderscore$average  & Integer  & Rating of the movie given by the users  \\
+  \hline
+ Tittle  & String  & Name of the movie  \\
+  \hline
+ Release$\textunderscore$date  & Date  & Release date of the movie  \\
+  \hline
+ Production$\textunderscore$countries  & JSON  & Countries that have produced the movie  \\
+  \hline
+ Homepage  & String  & Webpage of the movie  \\
+  \hline
+ Id  & Integer  & Movie identifier  \\
+  \hline
+ Original$\textunderscore$language  & String  & Original language of the movie  \\
+  \hline
+ Original$\textunderscore$title  & String  & Original title of the movie  \\
+  \hline
+ Overview  & String  & Description of the movie  \\
+  \hline
+ Popularity  & Integer  & Popularity of the movie  \\
+  \hline
+ Spoken$\textunderscore$languages  & JSON  & Different spoken languages in the movie  \\
+  \hline
+ Status  & String  & Status of the movie  \\
+  \hline
+ Tagline  & String  & Brief description of the movie  \\
+  \hline
+ Vote$\textunderscore$count  & Integer  & Number of votes that the movie has received  \\
+\hline
+\end{longtable}
+\end{center}
+
+The columns that we use are:
+
+\begin{center}
+\begin{longtable}[c]{| c | c | c |}
+ \hline
+ \multicolumn{1}{| c |}{\bfseries Variable} & \multicolumn{1}{| c |}{\bfseries Type} & \multicolumn{1}{| c |}{\bfseries Description}\\
+ \hline
+ \endfirsthead
+  
+ \hline
+ \endhead
+ 
+ \hline
+ \endfoot  
+ 
+ \hline
+ \endlastfoot
+ 
+ Budget  & Integer  & Budget of the movie  \\
+  \hline
+ Genres  & JSON  & Genres of the movie  \\
+  \hline
+ Keywords  & JSON  & Keywords related to the movie  \\
+  \hline
+ Production$\textunderscore$companies & JSON & Companies that produced the movie  \\
+  \hline
+ Revenue  & Integer  & Revenue of the movie  \\
+  \hline
+ Vote$\textunderscore$average  & Integer  & Rating of the movie given by the users  \\
+  \hline
+ Release$\textunderscore$date  & Date  & Release date of the movie  \\
+  \hline
+ Production$\textunderscore$countries  & JSON  & Countries that have produced the movie  \\
+\hline
+\end{longtable}
+\end{center}
+
+The columns that we have produce are:
+
+\begin{center}
+\begin{longtable}[c]{| c | c | c |}
+ \hline
+ \multicolumn{1}{| c |}{\bfseries Variable} & \multicolumn{1}{| c |}{\bfseries Type} & \multicolumn{1}{| c |}{\bfseries Description}\\
+ \hline
+ \endfirsthead
+  
+ \hline
+ \endhead
+ 
+ \hline
+ \endfoot  
+ 
+ \hline
+ \endlastfoot  
+ 
+ Year  & Integer  & Year of the release  \\
+  \hline
+ Month  & Integer  & Month of the release  \\
+  \hline
+ Day  & Integer  & Day of the release  \\
+  \hline
+ Decade  & Integer  & Decade of the release  \\
+  \hline
+ Earnings  & Integer  & Earnings of a movie  \\
+\hline
+\end{longtable}
+\end{center}
+
+We had to parse the columns that contain JSON values to String in order to have a better structure to be able to retrieve the required information.
+
+\section{Problem characterization in the application domain}
+
+The domain in which we have worked on is the one related to the movie industry, so terms like budget, revenue, ratings are used everywhere. This domain does not have many fuzzy words, as a consequence, it has been quite easy to understand its vocabulary.\\
+
+Apart from that, as we do not have access to experts in the topic, we have tried put ourselves into a movie analyst shoes, in order to think what kind of questions we want to explain to the public to ilustrate how the industry has evolved over the last 50 years.\\
+
+The questions that we have raised for this practical work are the following:
+
+\begin{enumerate}
+	\item When is more profitable to release a film?
+	\item How the popularity of the companies has evolved over time?
+	\item Which are the most remarkable genres and keywords in the movie industry of a country?
+\end{enumerate}
+
+\section{Data and Task abstractions}
+
+\subsection{First Question}
+
+\subsubsection{Target}
+The target of this question the \textit{Period of the year in which it is more profitable to release a film}. This target can be classified as an Atribute $\,\to\,$ One $\,\to\,$ Distribution.
+
+\subsubsection{Abstract Data}
+
+First of all, we had to think what kind of data do we need to answer the first question properly. We realized that we need to produce some data in order to know the Decade, Month and the Earnings of the different films.\\
+
+We have decided to use the Decade instead of the Year because there were many years and as the film industry usually categorize films by decades we thought that it could be a good option.\\
+
+The attributes that we use for this question are the following:
+
+\begin{itemize}
+	\item Consumed attributes
+		\begin{itemize}
+			\item Budget: Ordered $\,\to\,$ Quantitative $\,\to\,$ Sequential.
+			\item Revenue: Ordered $\,\to\,$ Quantitative $\,\to\,$ Sequential.
+			\item Release$\textunderscore$date: Ordered $\,\to\,$ Ordinal $\,\to\,$ Secuential.
+		\end{itemize}
+	\item Produced attributes (these attributes have been produced on the EDA)
+		\begin{itemize}
+			\item Year: Ordered $\,\to\,$ Ordinal $\,\to\,$ Sequential.
+			\item Month: Ordered $\,\to\,$ Ordinal $\,\to\,$ Cyclic.
+			\item Decade: Ordered $\,\to\,$ Ordinal $\,\to\,$ Sequential.
+			\item Earnings: Ordered $\,\to\,$ Quantitative $\,\to\,$ Diverging.
+		\end{itemize}
+\end{itemize}
+
+\subsubsection{Abstract Tasks}
+
+The abstract tasks that we have defined for this question are the following:
+
+\begin{itemize}
+	\item Produce $\,\to\,$ Derive. We combine the variables Revenue and Budget to produce the Earnings.
+	\item Consume $\,\to\,$ Discover $\,\to\,$ Generate. We are generating an hypothesis about when is more profitable to release a movie.
+	\item Search $\,\to\,$ Explore. We do not know the period of the year in which it is better to release a film.
+	\item Query $\,\to\,$ Identify. We are identifying the most profitable time to release a film.
+\end{itemize}
+
+\subsection{Second Question}
+
+\subsubsection{Target}
+We have defined the next target to this question: \textit{Evolution of the popularity of the companies over the years}. The defined target can be classified as All data $\,\to\,$ Trend.
+
+\subsubsection{Abstract Data}
+
+In order to answer this question we realized that we will need the following data:
+
+\begin{itemize}
+	\item Consumed attributes
+		\begin{itemize}
+			\item Vote$\textunderscore$average: Ordered $\,\to\,$ Quantitative $\,\to\,$ Sequential.
+			\item Production$\textunderscore$companies: Categorical.
+			\item Year: Ordered $\,\to\,$ Ordinal $\,\to\,$ Sequential.
+		\end{itemize}
+\end{itemize}
+
+\subsubsection{Abstract Tasks}
+
+The abstract tasks that we have defined for this question are the following:
+
+\begin{itemize}
+	\item Consume $\,\to\,$ Present $\,\to\,$. We want to present the evolution (trend) of the popularity of the companies over time. We already have this data so we do not need to generate more data..
+	\item Search $\,\to\,$ Explore. We do not know the evolution of the popularity of the companies and we do not know where to search for it.
+	\item Query $\,\to\,$ Compare. We want to compare the evolution of different companies
+\end{itemize}
+
+\subsection{Third Question}
+
+\subsubsection{Target}
+The target for this question is: \textit{Most remarkable genres of films and keywords of a country}. It can be classified as All data $\,\to\,$ Outliers.
+
+\subsubsection{Abstract Data}
+
+To tackle this question we need this data:
+
+\begin{itemize}
+	\item Consumed attributes
+		\begin{itemize}
+			\item Genres: Categorical.
+			\item Production$\textunderscore$countries: Categorical.
+		\end{itemize}
+	\item Produced attributes
+		\begin{itemize}
+			\item Frequency of movies in a genre by country: Ordered $\,\to\,$ Quantitative $\,\to\,$ Sequential.
+			\item Frequency of keywords by country: Ordered $\,\to\,$ Quantitative $\,\to\,$ Sequential.
+		\end{itemize}
+\end{itemize}
+
+\subsubsection{Abstract Tasks}
+
+We have selected the next abstract tasks for this question:
+
+\begin{itemize}
+	\item Consume $\,\to\,$ Enjoy. We feel curiosity to know which are the most important genres and keywords by country.
+	\item Search $\,\to\,$ Lookup. We know the number of movies in a genre and the number of keywords by country, and also we do know where to find them.
+	\item Query $\,\to\,$ Identify. We want to identify the outliers.
+\end{itemize}
+
+\section{Interaction and visual encoding}
+
+\subsection{First Question}
+
+The methods that we have selected to interact with the visualization are the following:
+
+\begin{itemize}
+	\item Filter: We filter by decades to reduce the size of the dataset in order to have a clear view of the data.
+\end{itemize}
+
+To encode the data we have used a Heatmap. We have selected this idiom because we have two ordered variables, Year and Month, that can act as categorical, and a quantitative variable, so we can use the categorical variables in the axis and let the quantitative for the cells of the heatmap.\\
+
+The X-axis represents the years of the selected Decade while the Y-axis encodes the different months. Finally, the cells encode the Earnings of the movies that have been released in a specific month of a year.\\
+
+We have used a green tone and we vary its saturation to obtain a green scale that represents the Earnings.\\
+
+\subsection{Second Question}
+
+We have selected the following methos to interact with the visualization:
+
+\begin{itemize}
+	\item Filter: We filter can filter by a group of years.
+	\item Facet $\,\to\,$ Superimpose: We overlap the evolution of different companies in the same visualization.
+\end{itemize}
+
+In order to encode the data we have selected a Line chart because these plots are perfect to show changes over certain periods of time. In our case, these changes will be the variation of the average rating and we will be able to overlap different companies to compare them.\\
+
+The X-axis represents the years that the user have selected, the Y-axis shows the average rating of a given company based on the ratings of their movies. Apart from that, every country has a different color to improve the visual perception.\\
+
+\subsection{Third Question}
+
+The interaction with the visualization will be carried out by the following methods:
+
+\begin{itemize}
+	\item Order: We can order by frequency.
+	\item Filter: We filter the data by country and by the number of keywords.
+	\item Juxtapose: We have 2 graphics that interact at the same time when the country is selected.
+\end{itemize}
+
+A lollipop chart and a word cloud has been selected for the encoding. The first one encodes the prevalent genres in a country and the second one the most frequent keywords in a country.\\
+
+The X-axis of the Lollipop chart encodes the Frequency while the Y-axis encodes the Genre.\\
+
+We consider that both graphics are suitable to show the frequency of the data.\\
+
+It is believed that choosing the Word Cloud is not a good decision because the area is a poor metaphor and the longer words appear bigger. We agree with those arguments, however, as we are not interested in the value of the frequency, we think that it could be a right choice because it highlights the most important keywords.\\
+
+In addition, we have set a max number of characters for the keywords to avoid the problem related with the long strings mentioned before.\\
+
+\section{Algorithmic implementation}
+
+Before implementing our application, we have performed a exploratory data anaylysis in order to inspect the data in more depth. Thanks to this, we have been able to realize which data is worth it and which one can be removed.\\
+
+Also, this makes the execution of our shiny app more efficient due to the fact that we simplify our dataset and the application has to deal with much less data.\\
+
+\subsection{First Question}
+TODO: 
+
+\subsection{Second Question}
+TODO:
+
+\subsection{Third Question}
+TODO:
+
+\section{Execution instructions}
+
+The app folder is called \textit{movies}.\\
+
+The downloaded dataset must be copied inside the \textit{movies/data} folder. The name of the dataset must be: \textbf{tmdb$\textunderscore$5000$\textunderscore$movies.csv}.\\
+
+Apart from that, the \textbf{data$\textunderscore$preparation.R} must be executed in order to clean the data and generate the new dataset, \textbf{cleaned$\textunderscore$tmdb$\textunderscore$5000$\textunderscore$movies.csv} inside the \textit{movies/data} folder folder.\\
+
+After that, the Shiny app can be executed from \textit{RStudio} or from the command line.
+
+\section{Application deployment}
+
+The application has been deployed to \url{https://www.shinyapps.io/}. It can be found here \href{https://jruedas.shinyapps.io/movies/}{Big data: TMDB Movies project}.
+
+\section{Final conclusions}
+
+We found this project very interesting, we really enjoyed the R programming and Shiny. The Shiny documentation was really well written so it was easy to find out how to solve the problems. The main problem was the data preparation aspect because some columns were in JSON format so we had to parse them, even though, this project has been educative and interesting.\\
+
+\end{document}
